@@ -40,7 +40,7 @@ public:
 class SegmentTree {
     SegmentTreeNode* root;
 public:
-    void build(int ar[], int l, int r) {
+    void build(vector<int> &ar, int l, int r) {
         root = buildTree(root, l, r, ar);
     }
     int query(int l, int r) {
@@ -51,7 +51,7 @@ public:
     }
 
 private:
-    SegmentTreeNode* buildTree(SegmentTreeNode * node, int l, int r, int ar[]) {
+    SegmentTreeNode* buildTree(SegmentTreeNode * node, int l, int r, vector<int> &ar) {
         if (node == nullptr)
             node = new SegmentTreeNode(l, r);
         if (l < r) {
@@ -98,8 +98,8 @@ public:
             index[i] = target[i];
             revIndex[target[i]] = i;
         }
-        int * res = new int[target.size()];
-        fill(res, res + target.size(), 0);
+        vector<int> res(target.size());
+        fill(res.begin(), res.end(), 0);
         SegmentTree * st = new SegmentTree();
         st -> build(res, 0, target.size() - 1);
         for (int i = 0; i < arr.size(); ++i) {
