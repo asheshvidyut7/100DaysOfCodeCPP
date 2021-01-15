@@ -67,15 +67,30 @@ private:
 
 class Solution {
 public:
-    int findMaximumXOR(vector<int>& nums) {
-        Trie * trie = new Trie();
-        for (auto num : nums) {
-            trie -> insert(num);
+    static bool compare_queries(vector<int> & x, vector<int> & y) {
+        return x[1] < y[1];
+    };
+    vector<int> maximizeXor(vector<int>& nums, vector<vector<int>>& queries) {
+        for (int i = 0; i < queries.size(); ++i) {
+            queries[i].push_back(i);
         }
-        ll ans = INT_MIN;
-        for (auto num : nums) {
-            ans = max(ans, trie -> query(num));
+        sort(queries.begin(), queries.end(), compare_queries);
+        sort(nums.begin(), nums.end());
+        int index_num = 0;
+        vector<int> ans(queries.size());
+        Trie* t = new Trie();
+        for (int i = 0; i < queries.size(); ++i) {
+            int m = queries[i][1];
+            while(index_num < nums.size() && nums[index_num] <= m) {
+                t -> insert(nums[index_num]);
+                index_num++;
+            }
+            if (index_num != 0)
+                ans[queries[i][2]] = (int)(t -> query(queries[i][0]));
+            else
+                ans[queries[i][2]] = -1;
         }
         return ans;
     }
 };
+

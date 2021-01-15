@@ -41,23 +41,23 @@ class SegmentTree {
     SegmentTreeNode* root;
 public:
     void build(vector<int> &ar, int l, int r) {
-        root = buildTree(root, l, r, ar);
+        root = build(root, l, r, ar);
     }
     int query(int l, int r) {
-        return queryTree(root, l, r);
+        return query_tree(root, l, r);
     }
     void update(int indx, int val) {
-        updateTree(root, indx, val);
+        update_tree(root, indx, val);
     }
 
 private:
-    SegmentTreeNode* buildTree(SegmentTreeNode * node, int l, int r, vector<int> &ar) {
+    SegmentTreeNode* build(SegmentTreeNode * node, int l, int r, vector<int> &ar) {
         if (node == nullptr)
             node = new SegmentTreeNode(l, r);
         if (l < r) {
             int mid = (l + r) >> 1;
-            node -> left = buildTree(node -> left, l, mid, ar);
-            node -> right = buildTree(node -> right, mid + 1, r, ar);
+            node -> left = build(node->left, l, mid, ar);
+            node -> right = build(node->right, mid + 1, r, ar);
             node -> max = max(node -> left -> max, node -> right -> max);
         }
         else if (l == r){
@@ -65,16 +65,16 @@ private:
         }
         return node;
     }
-    int queryTree(SegmentTreeNode * node, int l, int r) {
+    int query_tree(SegmentTreeNode * node, int l, int r) {
         if (node -> r < l || node -> l > r) {
             return INT_MIN;
         }
         if (node -> l >= l && node -> r <= r) {
             return node -> max;
         }
-        return max(queryTree(node -> left, l, r), queryTree(node -> right, l, r));
+        return max(query_tree(node->left, l, r), query_tree(node->right, l, r));
     }
-    void updateTree(SegmentTreeNode * node, int index, int val) {
+    void update_tree(SegmentTreeNode * node, int index, int val) {
         if (node -> r < index || node -> l > index) {
             return;
         }
@@ -82,8 +82,8 @@ private:
             node -> max = val;
             return;
         }
-        updateTree(node -> left, index, val);
-        updateTree(node -> right, index, val);
+        update_tree(node->left, index, val);
+        update_tree(node->right, index, val);
         node -> max = max(node -> left -> max, node -> right -> max);
     }
 };
