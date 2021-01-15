@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <string>
 #include <vector>
@@ -22,129 +21,61 @@
 
 using namespace std;
 
-class SegmentTreeNode {
+class TrieNode {
 public:
-    SegmentTreeNode *left;
-    SegmentTreeNode *right;
-    int l, r, max;
-    SegmentTreeNode(int l, int r) {
-        this -> l = l;
-        this -> r = r;
-        this -> max = INT_MIN;
-        this -> left = nullptr;
-        this -> right = nullptr;
-    }
-
+    TrieNode * children[2];
 };
 
-class SegmentTree {
-    SegmentTreeNode* root;
+class Trie {
+    TrieNode * root;
+    int MAX_BIT = 35;
 public:
-    void build(vector<int> &ar, int l, int r) {
-        root = buildTree(root, l, r, ar);
+    void insert(ll val) {
+        root = insertTrie(val << 1, MAX_BIT, root);
     }
-    int query(int l, int r) {
-        return queryTree(root, l, r);
-    }
-    void update(int indx, int val) {
-        updateTree(root, indx, val);
+    ll query(ll val) {
+        return queryTrie(val << 1, root, MAX_BIT, 0ll) >> 1;
     }
 
 private:
-    SegmentTreeNode* buildTree(SegmentTreeNode * node, int l, int r, vector<int> &ar) {
-        if (node == nullptr)
-            node = new SegmentTreeNode(l, r);
-        if (l < r) {
-            int mid = (l + r) >> 1;
-            node -> left = buildTree(node -> left, l, mid, ar);
-            node -> right = buildTree(node -> right, mid + 1, r, ar);
-            node -> max = max(node -> left -> max, node -> right -> max);
+    TrieNode * insertTrie(ll num, int bitPos, TrieNode * node) {
+        if (bitPos == -1) {
+            return nullptr;
         }
-        else if (l == r){
-            node -> max = ar[l];
+        int bitAtPosition = ((num & (1L << bitPos)) != 0) ? 1 : 0;
+        if (node == nullptr) {
+            node = new TrieNode();
         }
+        node -> children[bitAtPosition] = insertTrie(num, bitPos - 1, node -> children[bitAtPosition]);
         return node;
     }
-    int queryTree(SegmentTreeNode * node, int l, int r) {
-        if (node -> r < l || node -> l > r) {
-            return INT_MIN;
+    ll queryTrie(ll n, TrieNode * node, int bitPos, ll ans) {
+        if (node == nullptr)
+            return ans;
+        if (bitPos == -1) {
+            return ans;
         }
-        if (node -> l >= l && node -> r <= r) {
-            return node -> max;
+        int bitAtPosition = ((n & (1L << bitPos)) != 0) ? 1 : 0;
+        if (node -> children[bitAtPosition ^ 1] != nullptr) {
+            ans |= (1L << (bitPos));
+            return queryTrie(n, node -> children[bitAtPosition ^ 1], bitPos - 1, ans);
         }
-        return max(queryTree(node -> left, l, r), queryTree(node -> right, l, r));
-    }
-    void updateTree(SegmentTreeNode * node, int index, int val) {
-        if (node -> r < index || node -> l > index) {
-            return;
-        }
-        if (node -> l == index && node -> r == index) {
-            node -> max = val;
-            return;
-        }
-        updateTree(node -> left, index, val);
-        updateTree(node -> right, index, val);
-        node -> max = max(node -> left -> max, node -> right -> max);
+        return queryTrie(n, node -> children[bitAtPosition], bitPos - 1, ans);
+
     }
 };
 
 class Solution {
-
 public:
-    int minOperations(vector<int>& target, vector<int>& arr) {
-        map<int, int> index;
-        map<int, int> revIndex;
-        for (int i = 0; i < target.size(); ++i) {
-            index[i] = target[i];
-            revIndex[target[i]] = i;
+    int findMaximumXOR(vector<int>& nums) {
+        Trie * trie = new Trie();
+        for (auto num : nums) {
+            trie -> insert(num);
         }
-        vector<int> res(target.size());
-        fill(res.begin(), res.end(), 0);
-        SegmentTree * st = new SegmentTree();
-        st -> build(res, 0, target.size() - 1);
-        for (int i = 0; i < arr.size(); ++i) {
-            if (revIndex.find(arr[i]) != revIndex.end()) {
-                int indx = revIndex[arr[i]];
-                int maxValueBefore = st->query(0, indx - 1);
-                if (maxValueBefore != INT_MIN) {
-                    st -> update(indx, maxValueBefore + 1);
-                }
-                else {
-                    st -> update(indx, 1);
-                }
-            }
-        }
-        int ans = INT_MAX;
-        for (int i = 0; i < target.size(); ++i) {
-            int val = st->query(i, i);
-            if (val != INT_MIN) {
-                ans = min((ll)target.size() - val, (ll)ans);
-            }
+        ll ans = INT_MIN;
+        for (auto num : nums) {
+            ans = max(ans, trie -> query(num));
         }
         return ans;
     }
-
 };
-int main() {
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
-    Solution* s = new Solution();
-    vector<int> target;
-    target.push_back(6);
-    target.push_back(4);
-    target.push_back(8);
-    target.push_back(1);
-    target.push_back(3);
-    target.push_back(2);
-    vector<int> arr;
-    arr.push_back(4);
-    arr.push_back(7);
-    arr.push_back(6);
-    arr.push_back(2);
-    arr.push_back(3);
-    arr.push_back(8);
-    arr.push_back(6);
-    arr.push_back(1);
-    cout << s -> minOperations(target, arr) << endl;
-    return 0;
-}
